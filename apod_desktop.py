@@ -18,7 +18,7 @@ History:
 """
 from sys import argv, exit
 from datetime import datetime, date
-from hashlib import sha256
+import hashlib
 from os import path
 import requests
 import sqlite3 
@@ -41,7 +41,7 @@ def main():
     # Download today's APOD
     image_url = apod_info_dict['url']
     image_msg = download_apod_image(image_url)
-    image_sha256 = "TODO"
+    image_sha256 = hashlib.sha256(image_msg)
     image_size = -1 # TODO
     image_path = get_image_path(image_url, image_dir_path)
 
