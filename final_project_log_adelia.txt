@@ -7,6 +7,7 @@
 
 04-22-2022
 - Filled in image_sha256
+- Hashlib import wasn't working, so hashlib.sha256() did not work- imported hashlib itself rather than just sha256 and it should work now? The text is colorful so that may be a good sign
 
 04-23-2022
 -

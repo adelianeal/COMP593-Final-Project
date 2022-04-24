@@ -22,6 +22,7 @@ import hashlib
 from os import path
 import requests
 import sqlite3 
+import ctypes
 
 def main():
 
@@ -171,12 +172,14 @@ def create_image_db(db_path):
     """
     myConnection = sqlite3.connect(db_path)
     myCursor = myConnection.cursor()
-    create_apod_table = """ CREATE TABLE IF NOT EXISTS apod info (
+    create_apod_table = """ CREATE TABLE IF NOT EXISTS apod_info (
                     image_path PRIMARY KEY,
                     image_size NOT NULL,
-                    image_sha356 NOT NULL
+                    image_sha256 NOT NULL
     );"""
     myCursor.execute(create_apod_table)
+    myCursor.commit()
+    myCursor.close()
 
 
 def add_image_to_db(db_path, image_path, image_size, image_sha256):
@@ -209,6 +212,9 @@ def set_desktop_background_image(image_path):
     :param image_path: Path of image file
     :returns: None
     """
-    return #TODO
-
+    try:
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 0)
+    except:
+        print('Error setting Desktop Background')
+        
 main()
