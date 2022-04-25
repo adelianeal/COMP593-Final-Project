@@ -6,10 +6,15 @@
 - Started create_image_db function (maybe finished it I actually have no idea)
 
 04-22-2022
-- Filled in image_sha256
+- Filled in image_sha256 variable
 - Hashlib import wasn't working, so hashlib.sha256() did not work- imported hashlib itself rather than just sha256 and it should work now? The text is colorful so that may be a good sign
 
 04-23-2022
--
--
--
+- Finished set_desktop_background_image function
+
+04-24-2022
+- Completed download_apod_image function
+- Completed save_image_file function
+- Didn't actually finish the create_image_db function so fixed that 
+- Finished add_image_to_apod function
+- Started image_already_in_db function but am confused so I'll try again later

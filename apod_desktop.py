@@ -149,7 +149,12 @@ def download_apod_image(image_url):
     :param image_url: URL of image
     :returns: Response message that contains image data
     """
-    image_data = image_url.content
+    resp_msg = requests.get(image_url)
+    if resp_msg.status_code == 200:
+        image_data = image_url.content
+        print('Successfully downloaded APOD Image.')
+    else:
+        print('Failed to download APOD Image. Code: ', resp_msg.status_code)
 
 
 def save_image_file(image_msg, image_path):
@@ -161,7 +166,12 @@ def save_image_file(image_msg, image_path):
     :param image_path: Path to save image file
     :returns: None
     """
-    return #TODO
+    if image_already_in_db(image_path):
+        print('Image already exists. Setting image as desktop background.')
+        set_desktop_background_image(image_path)
+    else:
+        with open('image_path', 'wb') as handler:
+            handler.write(image_msg)
 
 def create_image_db(db_path):
     """
@@ -173,14 +183,13 @@ def create_image_db(db_path):
     myConnection = sqlite3.connect(db_path)
     myCursor = myConnection.cursor()
     create_apod_table = """ CREATE TABLE IF NOT EXISTS apod_info (
-                    image_path PRIMARY KEY,
-                    image_size NOT NULL,
-                    image_sha256 NOT NULL
+                    image_path text PRIMARY KEY,
+                    image_size text NOT NULL,
+                    image_sha256 text NOT NULL
     );"""
     myCursor.execute(create_apod_table)
     myCursor.commit()
     myCursor.close()
-
 
 def add_image_to_db(db_path, image_path, image_size, image_sha256):
     """
@@ -192,7 +201,21 @@ def add_image_to_db(db_path, image_path, image_size, image_sha256):
     :param image_sha256: SHA-256 of image
     :returns: None
     """
-    return #TODO
+    myConnection = sqlite3.connect(db_path)
+    myCursor = myConnection.cursor()
+    add_apod_query = """ INSERT INTO apod_info (
+                        image_path,
+                        image_size,
+                        image_sha256)
+                        VALUES(?,?,?);"""
+    
+    apod_data = (image_path,
+                image_size,
+                image_sha256)
+
+    myCursor.execute(add_apod_query, apod_data)
+    myCursor.commit()
+    myCursor.close()
 
 def image_already_in_db(db_path, image_sha256):
     """
@@ -203,7 +226,16 @@ def image_already_in_db(db_path, image_sha256):
     :param image_sha256: SHA-256 of image
     :returns: True if image is already in DB; False otherwise
     """ 
-    return True #TODO
+    myConnection = sqlite3.connect(db_path)
+    myCursor = myConnection.cursor()
+
+    compare_statement = """SELECT image_sha256 from apod_info
+                        WHERE image_sha256 == image_sha256;"""
+    
+    
+    
+    
+    return True 
 
 def set_desktop_background_image(image_path):
     """
