@@ -19,7 +19,7 @@ History:
 from sys import argv, exit
 from datetime import datetime, date
 import hashlib
-from os import path
+import os
 import requests
 import sqlite3 
 import ctypes
@@ -28,7 +28,7 @@ def main():
 
     # Determine the paths where files are stored
     image_dir_path = get_image_dir_path()
-    db_path = path.join(image_dir_path, 'apod_images.db')
+    db_path = os.path.join(image_dir_path, 'apod_images.db')
 
     # Get the APOD date, if specified as a parameter
     apod_date = get_apod_date()
@@ -42,8 +42,8 @@ def main():
     # Download today's APOD
     image_url = apod_info_dict['url']
     image_msg = download_apod_image(image_url)
-    image_sha256 = hashlib.sha256(image_msg)
-    image_size = -1 # TODO
+    image_sha256 = hashlib.sha256(image_msg).hexdigest()
+    image_size = len(image_msg)
     image_path = get_image_path(image_url, image_dir_path)
 
     # Print APOD image information
@@ -66,7 +66,7 @@ def get_image_dir_path():
     """
     if len(argv) >= 2:
         dir_path = argv[1]
-        if path.isdir(dir_path):
+        if os.path.isdir(dir_path):
             print("Images directory:", dir_path)
             return dir_path
         else:
@@ -109,7 +109,7 @@ def get_image_path(image_url, dir_path):
     :param dir_path: Path of directory in which image is saved locally
     :returns: Path at which image is saved locally
     """
-    return "TODO"
+    return os.path.join(dir_path, image_url)
 
 def get_apod_info(date):
     """
@@ -123,7 +123,7 @@ def get_apod_info(date):
 
     if resp_msg.status_code == 200:
         print('Accessing the APOD API...')
-        return resp_msg.json
+        return resp_msg.json()
     else:
         print('Failed to connect to the APOD API. Code: ', resp_msg.status_code)
 
@@ -151,11 +151,10 @@ def download_apod_image(image_url):
     """
     resp_msg = requests.get(image_url)
     if resp_msg.status_code == 200:
-        image_data = image_url.content
+        return resp_msg.content
         print('Successfully downloaded APOD Image.')
     else:
         print('Failed to download APOD Image. Code: ', resp_msg.status_code)
-
 
 def save_image_file(image_msg, image_path):
     """
@@ -183,13 +182,13 @@ def create_image_db(db_path):
     myConnection = sqlite3.connect(db_path)
     myCursor = myConnection.cursor()
     create_apod_table = """ CREATE TABLE IF NOT EXISTS apod_info (
-                    image_path text PRIMARY KEY,
-                    image_size text NOT NULL,
-                    image_sha256 text NOT NULL
+                    imagepath text PRIMARY KEY,
+                    imagesize text NOT NULL,
+                    imagesha256 text NOT NULL
     );"""
     myCursor.execute(create_apod_table)
-    myCursor.commit()
-    myCursor.close()
+    myConnection.commit()
+    myConnection.close()
 
 def add_image_to_db(db_path, image_path, image_size, image_sha256):
     """
@@ -204,9 +203,9 @@ def add_image_to_db(db_path, image_path, image_size, image_sha256):
     myConnection = sqlite3.connect(db_path)
     myCursor = myConnection.cursor()
     add_apod_query = """ INSERT INTO apod_info (
-                        image_path,
-                        image_size,
-                        image_sha256)
+                        imagepath,
+                        imagesize,
+                        imagesha256)
                         VALUES(?,?,?);"""
     
     apod_data = (image_path,
@@ -214,8 +213,8 @@ def add_image_to_db(db_path, image_path, image_size, image_sha256):
                 image_sha256)
 
     myCursor.execute(add_apod_query, apod_data)
-    myCursor.commit()
-    myCursor.close()
+    myConnection.commit()
+    myConnection.close()
 
 def image_already_in_db(db_path, image_sha256):
     """
@@ -228,14 +227,15 @@ def image_already_in_db(db_path, image_sha256):
     """ 
     myConnection = sqlite3.connect(db_path)
     myCursor = myConnection.cursor()
+    sel_statement = """ SELECT imagesha256 FROM apod_info
+                        WHERE imagesha256= image_sha256;"""
+    
+    myCursor.execute(sel_statement)
+    results = myCursor.fetchall()
+    if len(results) > 0:
+        return True
 
-    compare_statement = """SELECT image_sha256 from apod_info
-                        WHERE image_sha256 == image_sha256;"""
-    
-    
-    
-    
-    return True 
+    myConnection.close()
 
 def set_desktop_background_image(image_path):
     """

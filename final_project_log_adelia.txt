@@ -18,3 +18,15 @@
 - Didn't actually finish the create_image_db function so fixed that 
 - Finished add_image_to_apod function
 - Started image_already_in_db function but am confused so I'll try again later
+
+04-26-2022
+- Completed get_image_path function
+- Completed image_already_in_db function
+- At this point, all TODOs have been filled in, but I'm not sure what works and what doesn't so now it's time to debug  
+- Got an error about a module object not being subscriptable. It turns out the dictionary was not being returned correctly due to missing () 
+- Fixed that, but am getting this: The SHA-256 of the image is:  <sha256 _hashlib.HASH object @ 0x000001F595E248B0> 
+    - The actual SHA256 is meant to be printed after the statement. I think something is missing. Possibly hexdigest() 
+    - That was the issue thankfully so that part is solved
+- My select statement is wrong- keep getting sqlite3 operational errors
+    - The value I want to look for is apparently not a column. Like yeah, that's the whole point?
+
