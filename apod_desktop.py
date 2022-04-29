@@ -109,7 +109,9 @@ def get_image_path(image_url, dir_path):
     :param dir_path: Path of directory in which image is saved locally
     :returns: Path at which image is saved locally
     """
-    return os.path.join(dir_path, image_url)
+    url = image_url
+    image_name = url.split('/')[-1]
+    return os.path.join(dir_path, image_name)
 
 def get_apod_info(date):
     """
@@ -184,7 +186,7 @@ def create_image_db(db_path):
     create_apod_table = """ CREATE TABLE IF NOT EXISTS apod_info (
                     imagepath text PRIMARY KEY,
                     imagesize text NOT NULL,
-                    imagesha256 text NOT NULL
+                    imagesha256 text NOT NULL UNIQUE
     );"""
     myCursor.execute(create_apod_table)
     myConnection.commit()
@@ -227,11 +229,11 @@ def image_already_in_db(db_path, image_sha256):
     """ 
     myConnection = sqlite3.connect(db_path)
     myCursor = myConnection.cursor()
-    sel_statement = """ SELECT imagesha256 FROM apod_info
-                        WHERE imagesha256= image_sha256;"""
-    
-    myCursor.execute(sel_statement)
+    selectStatement = ("""SELECT imagesha256 FROM apod_info WHERE imagesha256 = ? """, image_sha256)
+    string = str(selectStatement)
+    myCursor.execute(string)
     results = myCursor.fetchall()
+
     if len(results) > 0:
         return True
 

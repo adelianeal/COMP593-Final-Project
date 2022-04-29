@@ -30,3 +30,11 @@
 - My select statement is wrong- keep getting sqlite3 operational errors
     - The value I want to look for is apparently not a column. Like yeah, that's the whole point?
 
+04-28-2022
+- Still tried to fix the SQL query
+    - The newest issue is TypeError: execute() argument 1 must be str, not tuple
+
+04-29-2022
+- bruh
+
+
