@@ -19,7 +19,7 @@ History:
 from sys import argv, exit
 from datetime import datetime, date
 import hashlib
-import os
+import os 
 import requests
 import sqlite3 
 import ctypes
@@ -51,7 +51,7 @@ def main():
 
     # Add image to cache if not already present
     if not image_already_in_db(db_path, image_sha256):
-        save_image_file(image_msg, image_path)
+        save_image_file(image_msg, image_path, image_url)
         add_image_to_db(db_path, image_path, image_size, image_sha256)
 
     # Set the desktop background image to the selected APOD
@@ -124,7 +124,7 @@ def get_apod_info(date):
     resp_msg = requests.get("https://api.nasa.gov/planetary/apod?api_key=OgN20BOtcOfM9Nt8lj8JZzAJbhMkn9C79DYlMZ6p&date=" + date)
 
     if resp_msg.status_code == 200:
-        print('Accessing the APOD API...')
+        print('Accessing the APOD API... Complete')
         return resp_msg.json()
     else:
         print('Failed to connect to the APOD API. Code: ', resp_msg.status_code)
@@ -139,10 +139,11 @@ def print_apod_info(image_url, image_path, image_size, image_sha256):
     :param image_sha256: SHA-256 of image
     :returns: None
     """    
-    print('The URL of the image is: ', image_url)
-    print('The path to the downloaded image is: ', image_path)
-    print('The size of the image is: ', image_size, 'bytes.')
-    print('The SHA-256 of the image is: ', image_sha256)
+    print('Some information about the APOD:')
+    print('\tThe URL of the image is: ', image_url)
+    print('\tThe path to the downloaded image is: ', image_path)
+    print('\tThe size of the image is: ', image_size, 'bytes.')
+    print('\tThe SHA-256 of the image is: ', image_sha256)
 
 def download_apod_image(image_url):
     """
@@ -153,12 +154,12 @@ def download_apod_image(image_url):
     """
     resp_msg = requests.get(image_url)
     if resp_msg.status_code == 200:
+        print('Downloading APOD Image... Complete')
         return resp_msg.content
-        print('Successfully downloaded APOD Image.')
     else:
         print('Failed to download APOD Image. Code: ', resp_msg.status_code)
 
-def save_image_file(image_msg, image_path):
+def save_image_file(image_msg, image_path, image_url):
     """
     Extracts an image file from an HTTP response message
     and saves the image file to disk.
@@ -167,12 +168,11 @@ def save_image_file(image_msg, image_path):
     :param image_path: Path to save image file
     :returns: None
     """
-    if image_already_in_db(image_path):
-        print('Image already exists. Setting image as desktop background.')
-        set_desktop_background_image(image_path)
-    else:
-        with open('image_path', 'wb') as handler:
-            handler.write(image_msg)
+    image_msg = requests.get(image_url)
+    image_data = image_msg.content
+    with open(image_path, 'wb') as handler:
+        handler.write(image_data)
+        print('Saving Image... Complete')
 
 def create_image_db(db_path):
     """
@@ -186,7 +186,9 @@ def create_image_db(db_path):
     create_apod_table = """ CREATE TABLE IF NOT EXISTS apod_info (
                     imagepath text PRIMARY KEY,
                     imagesize text NOT NULL,
-                    imagesha256 text NOT NULL UNIQUE
+                    imagesha256 text NOT NULL UNIQUE,
+                    downloaded date NOT NULL
+
     );"""
     myCursor.execute(create_apod_table)
     myConnection.commit()
@@ -207,12 +209,14 @@ def add_image_to_db(db_path, image_path, image_size, image_sha256):
     add_apod_query = """ INSERT INTO apod_info (
                         imagepath,
                         imagesize,
-                        imagesha256)
-                        VALUES(?,?,?);"""
+                        imagesha256,
+                        downloaded)
+                        VALUES(?,?,?,?);"""
     
     apod_data = (image_path,
                 image_size,
-                image_sha256)
+                image_sha256,
+                datetime.now())
 
     myCursor.execute(add_apod_query, apod_data)
     myConnection.commit()
@@ -229,14 +233,14 @@ def image_already_in_db(db_path, image_sha256):
     """ 
     myConnection = sqlite3.connect(db_path)
     myCursor = myConnection.cursor()
-    selectStatement = ("""SELECT imagesha256 FROM apod_info WHERE imagesha256 = ? """, image_sha256)
-    string = str(selectStatement)
-    myCursor.execute(string)
+    selectStatement = "SELECT imagesha256 FROM apod_info WHERE imagesha256 = ?"
+    values = (image_sha256,)
+    myCursor.execute(selectStatement, values)
     results = myCursor.fetchall()
 
     if len(results) > 0:
+        print('Image already exists in the cache.')
         return True
-
     myConnection.close()
 
 def set_desktop_background_image(image_path):
@@ -248,6 +252,7 @@ def set_desktop_background_image(image_path):
     """
     try:
         ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 0)
+        print('Setting Image as Desktop Background... Complete')
     except:
         print('Error setting Desktop Background')
         

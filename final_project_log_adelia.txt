@@ -33,8 +33,13 @@
 04-28-2022
 - Still tried to fix the SQL query
     - The newest issue is TypeError: execute() argument 1 must be str, not tuple
+    - Not gonna lie, this was frustrating
 
 04-29-2022
-- bruh
-
-
+- I finally fixed the SQL query (thank you for the help!)
+- Realised the save_image_file function was also checking if the image_sha256 was already in the database and was getting a missing parameter error. 
+    - Thought I fixed the function, as my desktop background changed and there were no errors. But the screen was black.
+    - Turns out the image wasn't being saved, as I was missing the image content. Fixed that and it works as it should!
+- Edited the update messages that will be shown as the script runs
+- Realised I forgot to include the date/time the image was downloaded at in the database- error about datetime needing an argument so I decided to just create a timestamp instead
+- Triple checked to make sure everything worked properly and that all requirements have been met (I think they have?)
