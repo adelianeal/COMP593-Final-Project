@@ -17,16 +17,16 @@
 - Completed save_image_file function
 - Didn't actually finish the create_image_db function so fixed that 
 - Finished add_image_to_apod function
-- Started image_already_in_db function but am confused so I'll try again later
+- Started image_already_in_db function but am confused so I'll try again later (edit: was confused for a while...)
 
 04-26-2022
 - Completed get_image_path function
-- Completed image_already_in_db function
+- Completed image_already_in_db function (Spoiler alert: it wasn't right)
 - At this point, all TODOs have been filled in, but I'm not sure what works and what doesn't so now it's time to debug  
-- Got an error about a module object not being subscriptable. It turns out the dictionary was not being returned correctly due to missing () 
+- Got an error about a module object not being subscriptable. It turns out the dictionary was not being returned correctly due to missing () after json
 - Fixed that, but am getting this: The SHA-256 of the image is:  <sha256 _hashlib.HASH object @ 0x000001F595E248B0> 
     - The actual SHA256 is meant to be printed after the statement. I think something is missing. Possibly hexdigest() 
-    - That was the issue thankfully so that part is solved
+    - That was the issue thankfully so that part is functional now
 - My select statement is wrong- keep getting sqlite3 operational errors
     - The value I want to look for is apparently not a column. Like yeah, that's the whole point?
 
@@ -34,9 +34,11 @@
 - Still tried to fix the SQL query
     - The newest issue is TypeError: execute() argument 1 must be str, not tuple
     - Not gonna lie, this was frustrating
+    - Pretty sure I visited every page on StackOverflow 
 
 04-29-2022
 - I finally fixed the SQL query (thank you for the help!)
+    - added a variable to make image_sha256 a list, which was passed into execute() and didn't throw an error
 - Realised the save_image_file function was also checking if the image_sha256 was already in the database and was getting a missing parameter error. 
     - Thought I fixed the function, as my desktop background changed and there were no errors. But the screen was black.
     - Turns out the image wasn't being saved, as I was missing the image content. Fixed that and it works as it should!
